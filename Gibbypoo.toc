@@ -1,0 +1,5 @@
+## Interface: 11200
+## Title: Gibbypoo
+## Notes: Swaps to correct totem for shaman shock and lightning spells
+## Author: Theo
+Gibbypoo.lua
