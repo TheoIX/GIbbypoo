@@ -18,6 +18,7 @@ local GetSpellCooldown      = GetSpellCooldown
 local GetTime               = GetTime
 local CursorHasItem         = CursorHasItem
 local string_find           = string.find
+local string_gsub           = string.gsub
 local BOOKTYPE_SPELL        = BOOKTYPE_SPELL or "spell"
 
 -- =====================
@@ -28,10 +29,10 @@ local TOTEM_LIGHTNING = "Totem of Crackling Thunder"
 
 -- Map spell base name → totem name
 local TotemMap = {
-  ["Earth Shock"]     = TOTEM_SHOCK,
-  ["Frost Shock"]     = TOTEM_SHOCK,
-  ["Flame Shock"]     = TOTEM_SHOCK,
-  ["Lightning Bolt"]  = TOTEM_LIGHTNING,
+  ["Earth Shock"]      = TOTEM_SHOCK,
+  ["Frost Shock"]      = TOTEM_SHOCK,
+  ["Flame Shock"]      = TOTEM_SHOCK,
+  ["Lightning Bolt"]   = TOTEM_LIGHTNING,
   ["Lightning Strike"] = TOTEM_LIGHTNING,
 }
 
@@ -48,7 +49,9 @@ local SWAP_THROTTLE    = 1.45
 -- Fast bag index for watched item names
 local NameIndex   = {}  -- [itemName] = {bag=#, slot=#, link=...}
 
--- Safety: block swaps when vendor/bank/auction/trade/mail/quest/gossip is open
+-- =====================
+-- UI Safety: block swaps during interactions
+-- =====================
 local function IsInteractionBusy()
   return (MerchantFrame and MerchantFrame:IsVisible())
       or (BankFrame and BankFrame:IsVisible())
@@ -129,17 +132,11 @@ end
 -- Split "Name(Rank X)" → base, "Rank X"; otherwise returns spec, nil
 local function SplitNameAndRank(spec)
   if not spec then return nil, nil end
-  -- Lua 5.0 (WoW 1.12) has no string.match; use string.find with captures
+  -- Lua 5.0: use string.find with captures (no string.match)
   local _, _, base, rnum = string_find(spec, "^(.-)%s*%(%s*[Rr][Aa][Nn][Kk]%s*(%d+)%s*%)%s*$")
   if base and rnum then
-    base = string.gsub(base, "%s+$", "")
+    base = string_gsub(base, "%s+$", "")
     return base, ("Rank " .. rnum)
-  end
-  return spec, nil
-end
-  local base, rnum = string_match(spec, "^(.-)%s*%(%s*[Rr][Aa][Nn][Kk]%s*(%d+)%s*%)%s*$")
-  if base and rnum then
-    return (string.gsub(base, "%s+$", "")), ("Rank " .. rnum)
   end
   return spec, nil
 end
@@ -256,4 +253,3 @@ SlashCmdList["TOTEMSWAP"] = function()
     DEFAULT_CHAT_FRAME:AddMessage("TotemSwap DISABLED", 1, 0, 0)
   end
 end
-
