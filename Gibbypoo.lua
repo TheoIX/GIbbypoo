@@ -18,7 +18,6 @@ local GetSpellCooldown      = GetSpellCooldown
 local GetTime               = GetTime
 local CursorHasItem         = CursorHasItem
 local string_find           = string.find
-local string_match          = string.match
 local BOOKTYPE_SPELL        = BOOKTYPE_SPELL or "spell"
 
 -- =====================
@@ -130,6 +129,14 @@ end
 -- Split "Name(Rank X)" → base, "Rank X"; otherwise returns spec, nil
 local function SplitNameAndRank(spec)
   if not spec then return nil, nil end
+  -- Lua 5.0 (WoW 1.12) has no string.match; use string.find with captures
+  local _, _, base, rnum = string_find(spec, "^(.-)%s*%(%s*[Rr][Aa][Nn][Kk]%s*(%d+)%s*%)%s*$")
+  if base and rnum then
+    base = string.gsub(base, "%s+$", "")
+    return base, ("Rank " .. rnum)
+  end
+  return spec, nil
+end
   local base, rnum = string_match(spec, "^(.-)%s*%(%s*[Rr][Aa][Nn][Kk]%s*(%d+)%s*%)%s*$")
   if base and rnum then
     return (string.gsub(base, "%s+$", "")), ("Rank " .. rnum)
@@ -249,3 +256,4 @@ SlashCmdList["TOTEMSWAP"] = function()
     DEFAULT_CHAT_FRAME:AddMessage("TotemSwap DISABLED", 1, 0, 0)
   end
 end
+
